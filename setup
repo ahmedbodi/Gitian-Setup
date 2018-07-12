@@ -43,7 +43,6 @@ COMMIT="master"
 
    cd gitian-builder
    echo "Building 64Bit VM"
-   echo $(pwd)
    bin/make-base-vm --docker --suite trusty --arch amd64
 
    echo "Building 32Bit VM"
