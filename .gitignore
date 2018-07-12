@@ -1,0 +1,5 @@
+setup.log
+binaries/*
+gitian-builder/*
+vmbuilder/*
+tmp/*
