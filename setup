@@ -17,14 +17,24 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Ask for Git Details
-#URL=$(dialog --inputbox "Enter Github Link for Coin Source Code" 25 50  --output-fd 1)
-#FOLDER="$(echo $url | grep / | cut -d/ -f5-)"
-#COMMIT=$(dialog --inputbox "Enter Git Commit Hash for Coin Source Code" 25 50  --output-fd 1)
-URL="http://github.com/bitcoin/bitcoin"
-FOLDER="bitcoin"
-COMMIT="master"
+URL=$(dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --inputbox "Enter Github Link for Coin Source Code" 25 50  --output-fd 1)
+FOLDER="$(echo $url | grep / | cut -d/ -f5-)"
+COMMIT=$(dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --inputbox "Enter Git Commit Hash for Coin Source Code" 25 50  --output-fd 1)
+
+if [ -z "$URL" ]; then
+   dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --title "ERROR!" --msgbox 'Invalid Git Repository Specified!' 10 30
+fi
+
+if [ -z "$COMMIT" ]; then
+   COMMIT="master"
+   dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --title "INFO!" --msgbox 'Invalid Git Commit Specified! Using Master Branch' 10 30
+fi
 
 (
+   echo "Updating Git Modules"
+   git submodule init
+   git submodule update
+
    echo "Installing System Dependencies"
    # System Deps
    sudo apt-get install git ruby apt-cacher-ng qemu-utils debootstrap curl docker.io &>> /dev/null 2>&1
@@ -32,13 +42,16 @@ COMMIT="master"
    echo "Installing VM Builder from Git"
    # System VM Builder doesnt work with the latest versions
    cd vmbuilder
-   sudo python setup.py install &>> /dev/null 2>&1
+   sudo python setup.py install 2>&1
    cd ..
 
    # Clone Repo
    if [ ! -d "tmp/$FOLDER" ]; then
       echo "Cloning Source Code"
-      git clone $URL tmp/$FOLDER
+      git clone $URL tmp/$FOLDER -b $COMMIT
+      if [ ! -d "tmp/$FOLDER"]; then
+	  dialog --title "ERROR!" --msgbox 'Failed to clone Git Repository!' 6 20
+      fi
    fi
 
    cd gitian-builder
@@ -50,6 +63,8 @@ COMMIT="master"
 
    # Linux
    echo "Building Linux Binaries"
+   echo "./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml"
+
    ./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml
    mv build/out/$FOLDER-* build/out/src/$FOLDER-*.tar.gz ../binaries/
 
