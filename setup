@@ -18,7 +18,7 @@ fi
 
 # Ask for Git Details
 URL=$(dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --inputbox "Enter Github Link for Coin Source Code" 25 50  --output-fd 1)
-FOLDER="$(echo $url | grep / | cut -d/ -f5-)"
+FOLDER="$(echo $URL | grep / | cut -d/ -f5-)"
 COMMIT=$(dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --inputbox "Enter Git Commit Hash for Coin Source Code" 25 50  --output-fd 1)
 
 if [ -z "$URL" ]; then
@@ -63,14 +63,14 @@ fi
 
    # Linux
    echo "Building Linux Binaries"
-   echo "./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml"
+   echo "./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit $FOLDER=${COMMIT} --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml"
 
-   ./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml
+   ./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit $FOLDER=${COMMIT} --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml
    mv build/out/$FOLDER-* build/out/src/$FOLDER-*.tar.gz ../binaries/
 
    # Windows
    echo "Building Windows Binaries"
-   ./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-win.yml
+   ./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit $FOLDER=${COMMIT} --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-win.yml
    mv build/out/$FOLDER-*-win-unsigned.tar.gz inputs/$FOLDER-win-unsigned.tar.gz
    mv build/out/$FOLDER-*.zip build/out/$FOLDER-*.exe ../binaries/
 
