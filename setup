@@ -49,7 +49,7 @@ fi
    if [ ! -d "tmp/$FOLDER" ]; then
       echo "Cloning Source Code"
       git clone $URL tmp/$FOLDER -b $COMMIT
-      if [ ! -d "tmp/$FOLDER"]; then
+      if [ ! -d "tmp/$FOLDER" ]; then
 	  dialog --title "ERROR!" --msgbox 'Failed to clone Git Repository!' 6 20
       fi
    fi
