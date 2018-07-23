@@ -15,6 +15,9 @@ This is an easy build script for Gitian Based Coins such a bitcoin.
  
 ## Requirements:
  - Ubuntu 17.10
+ - ```sudo apt update```
+ - ```sudo apt upgrade -y```
+ - ```sudo apt install -y dialog```
  
  ## Donations:
   - Coming soon
