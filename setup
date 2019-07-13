@@ -3,7 +3,7 @@ set -e
 export LC_ALL=C
 export USE_DOCKER=1
 
-THREADS=4
+THREADS=50
 MEMORY=4096
 PATH=${PATH}:$(pwd)/gitian-builder/libexec
 
@@ -17,61 +17,49 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Ask for Git Details
-URL=$(dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --inputbox "Enter Github Link for Coin Source Code" 25 50  --output-fd 1)
+URL="https://github.com/donito-inc/donu-core"
 FOLDER="$(echo $URL | grep / | cut -d/ -f5-)"
-COMMIT=$(dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --inputbox "Enter Git Commit Hash for Coin Source Code" 25 50  --output-fd 1)
-
-if [ -z "$URL" ]; then
-   dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --title "ERROR!" --msgbox 'Invalid Git Repository Specified!' 10 30
-fi
-
-if [ -z "$COMMIT" ]; then
-   COMMIT="master"
-   dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --title "INFO!" --msgbox 'Invalid Git Commit Specified! Using Master Branch' 10 30
-fi
+COMMIT="master"
 
 (
    echo "Updating Git Modules"
-   git submodule init
-   git submodule update
+#  git submodule init
+#  git submodule update
 
    echo "Installing System Dependencies"
    # System Deps
-   sudo apt install -y git ruby apt-cacher-ng qemu-utils debootstrap curl docker.io &>> /dev/null 2>&1
+#  sudo apt install -y git ruby apt-cacher-ng qemu-utils debootstrap curl docker.io &>> /dev/null 2>&1
 
    echo "Installing VM Builder from Git"
    # System VM Builder doesnt work with the latest versions
-   cd vmbuilder
-   sudo python setup.py install 2>&1
-   cd ..
+#  cd vmbuilder
+#  sudo python setup.py install 2>&1
+#  cd ..
 
    # Clone Repo
-   if [ ! -d "tmp/$FOLDER" ]; then
-      echo "Cloning Source Code"
-      git clone $URL tmp/$FOLDER -b $COMMIT
-      if [ ! -d "tmp/$FOLDER" ]; then
-	  dialog --title "ERROR!" --msgbox 'Failed to clone Git Repository!' 6 20
-      fi
-   fi
+#  if [ ! -d "tmp/$FOLDER" ]; then
+#     echo "Cloning Source Code"
+#     git clone $URL tmp/$FOLDER -b $COMMIT
+#  fi
 
    cd gitian-builder
-   echo "Building 64Bit VM"
-   bin/make-base-vm --docker --suite trusty --arch amd64
+#  echo "Building 64Bit VM"
+#   bin/make-base-vm --docker --suite bionic --arch amd64
 
-   echo "Building 32Bit VM"
-   bin/make-base-vm --docker --suite trusty --arch i386
+#   echo "Building 32Bit VM"
+#   bin/make-base-vm --docker --suite bionic --arch i386
 
    # Linux
-   echo "Building Linux Binaries"
-   echo "./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit $FOLDER=$COMMIT --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml"
+#   echo "Building Linux Binaries"
+#   echo "./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit $FOLDER=$COMMIT --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml"
 
-   ./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit $FOLDER=$COMMIT --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml
+   ./bin/gbuild -i -j ${THREADS} -m ${MEMORY} --commit $FOLDER=$COMMIT --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-linux.yml
    mv build/out/$FOLDER-* build/out/src/$FOLDER-*.tar.gz ../binaries/
 
    # Windows
    echo "Building Windows Binaries"
-   ./bin/gbuild -j ${THREADS} -m ${MEMORY} --commit $FOLDER=$COMMIT --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-win.yml
+   ./bin/gbuild -i -j ${THREADS} -m ${MEMORY} --commit $FOLDER=$COMMIT --url $FOLDER=${URL} ../tmp/$FOLDER/contrib/gitian-descriptors/gitian-win.yml
    mv build/out/$FOLDER-*-win-unsigned.tar.gz inputs/$FOLDER-win-unsigned.tar.gz
    mv build/out/$FOLDER-*.zip build/out/$FOLDER-*.exe ../binaries/
 
-) | dialog --backtitle "Easy Gitian Builder By Ahmed Bodiwala" --progressbox "Please Wait" 30 100
+)
